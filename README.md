@@ -16,8 +16,7 @@ Pooling Layers: These layers down-sample the image, reducing its dimensionality 
 Fully Connected Layers: After flattening the image, the model uses fully connected layers to classify the images as "normal" or "suspicious activity."
 The CNN architecture is built using multiple convolutional and pooling layers, with the final output being a softmax layer that predicts the probability of criminal behavior in a given frame.
 
-r
-Copy code
+
 # Example CNN Model in R using keras
 library(keras)
 
@@ -38,8 +37,7 @@ model %>% compile(
 Training the Model
 Once the model architecture is defined, I proceed to train the CNN on the labeled data. Using supervised learning, the model learns to distinguish between normal and suspicious activities by adjusting its internal parameters during training. The dataset is split into training and validation sets, allowing the model to learn from one set and validate its performance on the other.
 
-r
-Copy code
+
 # Training the CNN Model
 history <- model %>% fit(
   train_images, train_labels,
