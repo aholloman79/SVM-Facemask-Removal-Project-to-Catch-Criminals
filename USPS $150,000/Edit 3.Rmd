@@ -1,0 +1,97 @@
+---
+title: "Post office mail theft"
+author: "Avery Holloman"
+date: "2024-08-14"
+output: html_document
+---
+
+```{r}
+install.packages("av")
+install.packages("imager")
+
+```
+
+```{r}
+library(av)
+library(imager)
+```
+
+```{r}
+# Define the path to your video file
+video_path <- "C:/Users/jacob/OneDrive/Desktop/R Studio Projects 2024/Crime Stoppers_ USPS robbery in Poinciana.mp4"
+
+# Define the output directory for the frames
+output_dir <- "frames"
+dir.create(output_dir, showWarnings = FALSE)
+
+# Construct the ffmpeg command
+ffmpeg_cmd <- sprintf('ffmpeg -i "%s" -vf "fps=1" "%s/frame_%%04d.jpg"', video_path, output_dir)
+
+# Run the ffmpeg command
+system(ffmpeg_cmd)
+
+```
+```{r}
+# Load necessary package
+library(imager)
+
+# Create a directory to save preprocessed images
+dir.create("preprocessed_frames")
+
+# List all the frame files
+frame_files <- list.files("frames", full.names = TRUE)
+
+# Preprocess each frame (resize, normalize, etc.)
+for (file in frame_files) {
+  img <- load.image(file)
+  
+  # Resize the image (256x256 for example, but adjust as needed for your model)
+  img_resized <- resize(img, 256, 256)
+  
+  # Save the preprocessed image
+  output_file <- file.path("preprocessed_frames", basename(file))
+  save.image(img_resized, output_file)
+}
+```
+
+```{r}
+# process_with_gan.py
+library(reticulate)
+# Set up Python environment (optional, only if not done)
+reticulate::py_install("tensorflow")
+"import tensorflow as tf
+from PIL import Image
+import numpy as np
+import os
+
+def load_image(filename):
+    img = Image.open(filename)
+    img = img.resize((256, 256))  # Adjust to the model's required input size
+    img = np.array(img) / 255.0
+    return img
+
+def process_image(image_path, model):
+    img = load_image(image_path)
+    img = np.expand_dims(img, axis=0)
+    processed_img = model.predict(img)  # Use your model's predict method
+    processed_img = np.squeeze(processed_img, axis=0)
+    processed_img = (processed_img * 255).astype(np.uint8)
+    return Image.fromarray(processed_img)
+
+def main():
+    model = tf.keras.models.load_model("path_to_your_sam_cgan_model")  # Load your trained SAM C-GAN model
+    input_dir = "preprocessed_frames"
+    output_dir = "processed_frames"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for filename in os.listdir(input_dir):
+        if filename.endswith(".jpg"):
+            processed_img = process_image(os.path.join(input_dir, filename), model)
+            processed_img.save(os.path.join(output_dir, filename))
+
+if __name__ == "__main__":
+    main()"
+
+```
+
+
